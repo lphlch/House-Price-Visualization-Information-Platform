@@ -1,0 +1,142 @@
+{% extends 'layout.html' %}
+{% block title %}Park List{% endblock %}
+{% block script %}
+    <script>
+        //$(function () {
+        //    bindBtnAddSubmitEvent();
+        //})
+
+        function deletePark() {
+            // pop up an input box to ask for id
+            var id = prompt("Please enter the id of the park you want to delete");
+            if (id != null) {
+                // send a delete request to the server
+                var request = new XMLHttpRequest();
+                request.open("GET", "delete?" + "id=" + id, true);
+                request.send();
+                // refresh the page
+                location.reload();
+            }
+        }
+
+        function bindBtnAddSubmitEvent() {
+            $('#formSubmit').click(function () {
+                var data = $('#parksForm').serialize();
+                $.ajax({
+                    url: '/park/add-from-file',
+                    type: 'POST',
+                    data: data,
+                    success: function (data) {
+                        if (data.status == 'success') {
+                            $('.toast').toast('show');
+                            location.reload();
+                        } else {
+                            $.each(data.errors, function (key, value) {
+                                $('#id_' + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div><h1 class="mt-2">Park List</h1></div>
+                <div class="row">
+                    <div class="col-sm">
+                        <a class="btn btn-success" href="/park/add" role="button">Add</a>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addPark">
+                            Add Parks From File
+                        </button>
+                        {# <a class="btn btn-danger" onclick="deletePark()" role="button">Delete</a>#}
+                    </div>
+                    <form method="get">
+                        <div class="input-group col-sm">
+                            <input type="text" name="search_name" class="form-control" placeholder="Search for..."
+                                   value="{{ search_name }}">
+                            <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="submit">Go!</button>
+                        </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add From File Modal -->
+        <div class="modal fade" id="addPark" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="parksForm" method="post" action="add-from-file" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Parks</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label for="parksFile">Choose a txt file to upload</label>
+                            <input type="file" name="parkFile">
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="formSubmit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered mt-3">
+            <caption>Park List</caption>
+            <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Area (k m2)</th>
+                <th scope="col">District</th>
+                <th scope="col">Location</th>
+                <th scope="col">Operation</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for park in parks %}
+                <tr>
+                    <th scope="row">
+                        {{ park.ID }}
+                    </th>
+                    <td>
+                        {{ park.name }}
+                    </td>
+                    <td>
+                        {{ park.area }}
+                    </td>
+                    <td>
+                        {{ park.district }}
+                    </td>
+                    <td>
+                        {{ park.location }}
+                    </td>
+                    <td>
+                        <a class="btn-sm btn-primary" href="/park/edit/{{ park.ID }}" role="button">Edit</a>
+                        <a class="btn-sm btn-danger" href="/park/delete/{{ park.ID }}" role="button">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
