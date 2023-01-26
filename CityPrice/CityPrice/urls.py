@@ -32,4 +32,6 @@ urlpatterns = [
     path('district/add', views.districtAdd),
     path('district/edit/<int:nid>', views.districtEdit),
     path('district/delete/<int:nid>', views.districtDelete),
+
+    path('test/', views.pageTest),
 ]
