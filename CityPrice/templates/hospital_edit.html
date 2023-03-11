@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% block title %}
+    Edit Hospital
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="ml-3 mt-2">Edit Hospital</h1>
+            </div>
+        </div>
+        <div class="container">
+
+            <form id="park_form" method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-row">
+                    {% for field in form %}
+                        <div class="form-group col-md-6">
+                            {{ field.label }}{{ field }}
+                            <span class="text-danger">{{ field.errors.0 }}</span>
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

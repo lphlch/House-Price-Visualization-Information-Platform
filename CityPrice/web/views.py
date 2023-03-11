@@ -232,3 +232,141 @@ def pageTest(request):
         obj = paginator.page(paginator.num_pages)
 
     return render(request, 'test.html', {'obj': obj})
+
+
+# ------------------- House -------------------
+class HouseForm(BootstrapModelForm):
+    class Meta:
+        model = models.Neighbourhood
+        fields = '__all__'
+
+
+def house(request):
+    search_name = request.GET.get('search_name')
+    if search_name:
+        houses = models.Neighbourhood.objects.filter(name__contains=search_name)
+    else:
+        search_name = ''
+        houses = models.Neighbourhood.objects.all()
+    # print(houses, search_name)
+
+    return render(request, 'house.html', {'houses': houses, 'search_name': search_name})
+
+
+
+# ------------------- School -------------------
+class SchoolForm(BootstrapModelForm):
+    class Meta:
+        model = models.School
+        fields = '__all__'
+
+
+class SchoolAddForm(SchoolForm):
+    pass
+
+def school(request):
+    search_name = request.GET.get('search_name')
+    if search_name:
+        schools = models.School.objects.filter(name__contains=search_name)
+    else:
+        search_name = ''
+        schools = models.School.objects.all()
+    # print(schools, search_name)
+    schoolForm = SchoolAddForm()
+
+    return render(request, 'school.html', {'schools': schools, 'search_name': search_name, 'form': schoolForm})
+
+def schoolAdd(request):
+    if request.method == 'GET':
+        return None
+
+    form = SchoolAddForm(data=request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'failed', 'errors': form.errors})
+
+def schoolDelete(request, nid):
+    id = nid
+
+    if not id:
+        return render(request, 'school.html', {'error': 'Please fill in the ID'})
+
+    # id existence not checked
+    models.School.objects.filter(ID=id).delete()
+    return redirect('/school/')
+
+def schoolEdit(request, nid):
+    obj = models.School.objects.filter(ID=nid).first()
+    if request.method == 'GET':
+        form = SchoolAddForm(instance=obj)
+        return render(request, 'school_edit.html', {'form': form})
+
+    form = SchoolAddForm(data=request.POST, instance=obj)
+    if form.is_valid():
+        form.save()
+        return redirect('/school/')
+    print(form.errors)
+    return render(request, 'school_edit.html', {'form': form})
+
+
+
+# ------------------- Hospital -------------------
+class HospitalForm(BootstrapModelForm):
+    class Meta:
+        model = models.Hospital
+        fields = '__all__'
+
+class HospitalAddForm(HospitalForm):
+    pass
+
+def hospital(request):
+    search_name = request.GET.get('search_name')
+    if search_name:
+        hospitals = models.Hospital.objects.filter(name__contains=search_name)
+    else:
+        search_name = ''
+        hospitals = models.Hospital.objects.all()
+    # print(hospitals, search_name)
+    hospitalForm = HospitalAddForm()
+
+    return render(request, 'hospital.html', {'hospitals': hospitals, 'search_name': search_name, 'form': hospitalForm})
+
+def hospitalAdd(request):
+    if request.method == 'GET':
+        return None
+
+    form = HospitalAddForm(data=request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'failed', 'errors': form.errors})
+
+def hospitalDelete(request, nid):
+    id = nid
+
+    if not id:
+        return render(request, 'hospital.html', {'error': 'Please fill in the ID'})
+
+    # id existence not checked
+    models.Hospital.objects.filter(ID=id).delete()
+    return redirect('/hospital/')
+
+def hospitalEdit(request, nid):
+    obj = models.Hospital.objects.filter(ID=nid).first()
+    if request.method == 'GET':
+        form = HospitalAddForm(instance=obj)
+        return render(request, 'hospital_edit.html', {'form': form})
+
+    form = HospitalAddForm(data=request.POST, instance=obj)
+    if form.is_valid():
+        form.save()
+        return redirect('/hospital/')
+    print(form.errors)
+    return render(request, 'hospital_edit.html', {'form': form})
+
+def map(request):
+    print('map')
+    return render(request, 'map.html')

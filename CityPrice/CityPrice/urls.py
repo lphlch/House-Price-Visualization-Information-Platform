@@ -22,6 +22,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index),
 
+    path('map/', views.map),
+
     path('park/', views.park),
     path('park/add', views.parkAdd),
     path('park/add-from-file',views.parkAddFromFile),
@@ -33,5 +35,18 @@ urlpatterns = [
     path('district/edit/<int:nid>', views.districtEdit),
     path('district/delete/<int:nid>', views.districtDelete),
 
+    path('house/', views.house),
+
+    path('school/', views.school),
+    path('school/add', views.schoolAdd),
+    path('school/edit/<int:nid>', views.schoolEdit),
+    path('school/delete/<int:nid>', views.schoolDelete),
+
+    path('hospital/', views.hospital),
+    path('hospital/add', views.hospitalAdd),
+    path('hospital/edit/<int:nid>', views.hospitalEdit),
+    path('hospital/delete/<int:nid>', views.hospitalDelete),
+
     path('test/', views.pageTest),
+
 ]

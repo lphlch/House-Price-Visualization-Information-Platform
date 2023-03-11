@@ -1,0 +1,136 @@
+{% extends 'layout.html' %}
+{% block title %}School List{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div><h1 class="mt-2">School List</h1></div>
+                <div class="row">
+                    <div class="col-sm">
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addSchool">
+                            Add School
+                        </button>
+                    </div>
+                    <form method="get">
+                        <div class="input-group col-sm">
+                            <input type="text" name="search_name" class="form-control" placeholder="Search for..."
+                                   value="{{ search_name }}">
+                            <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="submit">Go!</button>
+                        </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- School Add Modal -->
+        <div class="modal fade" id="addSchool" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add School</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="modelForm">
+                            {% csrf_token %}
+                            <div class="form-row">
+                                {% for field in form %}
+                                    <div class="form-group col-md-6">
+                                        {{ field.label }}{{ field }}
+                                        <span class="text-danger">{{ field.errors.0 }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="formSubmit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <table class="table table-bordered mt-3">
+            <caption>School List</caption>
+            <thead>
+            <tr>
+                <th scope="col">No.</th>
+                <th scope="col">Name</th>
+                <th scope="col">Level</th>
+                <th scope="col">District</th>
+                <th scope="col">Location</th>
+                <th scope="col">Operation</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for filed in schools %}
+                <tr>
+                    <th scope="row">
+                        {{ filed.ID }}
+                    </th>
+                    <td>
+                        {{ filed.name }}
+                    </td>
+                    <td>
+                        {{ filed.get_level_display }}
+{#                        用 get_字段名_display 显示 choice 字段 #}
+                    </td>
+                    <td>
+                        {{ filed.district }}
+                    </td>
+                    <td>
+                        {{ filed.location }}
+                    </td>
+                    <td>
+                        <a class="btn-sm btn-primary" href="/school/edit/{{ filed.ID }}" role="button">Edit</a>
+                        <a class="btn-sm btn-danger" href="/school/delete/{{ filed.ID }}" role="button">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
+            bindBtnAddSubmitEvent();
+        })
+
+        function bindBtnAddSubmitEvent() {
+            $('#formSubmit').click(function () {
+                var data = $('#modelForm').serialize();
+                $.ajax({
+                    url: '/school/add',
+                    type: 'POST',
+                    data: data,
+                    success: function (data) {
+                        if (data.status == 'success') {
+                            $('.toast').toast('show');
+                            location.reload();
+                        } else {
+                            $.each(data.errors, function (key, value) {
+                                $('#id_' + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+    </script>
+
+{% endblock %}

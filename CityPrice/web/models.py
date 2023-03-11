@@ -18,7 +18,7 @@ class Neighbourhood(models.Model):
     ID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
-    district = models.CharField(max_length=30)
+    district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
     # foreign key & delete the recode if the district is deleted
     # district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
     # set null if the district is deleted
@@ -48,7 +48,7 @@ class Hospital(models.Model):
     ID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
-    district = models.CharField(max_length=30)
+    district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
 
     hospitalLevelChoices = (
         (1, '无等级'),
@@ -67,7 +67,7 @@ class School(models.Model):
     ID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
-    district = models.CharField(max_length=30)
+    district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
 
     schoolLevelChoices = (
         (1, '幼儿园'),
