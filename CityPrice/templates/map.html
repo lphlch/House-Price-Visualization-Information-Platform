@@ -4,17 +4,23 @@
 {% endblock %}
 {% block content %}
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
-        <style type="text/css">
-            body,
+        <meta charset="utf-8">
+        <title>MapVGL</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <style>
             html,
-            #allmap {
+            body {
                 width: 100%;
                 height: 100%;
-                overflow: hidden;
                 margin: 0;
-                font-family: "微软雅黑";
+                padding: 0;
+            }
+
+            #map_container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
             }
 
             #tips-right-below {
@@ -26,82 +32,140 @@
                 padding: 5px;
                 border: 1px solid #ccc;
                 border-radius: 5px;
+                text-align: center;
             }
-
-
         </style>
-        <script type="text/javascript"
-        <script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
-
-        <title>地图展示</title>
+        <script src="https://mapv.baidu.com/build/mapv.min.js"></script>
+        <script src="https://unpkg.com/mapvgl@1.0.0-beta.168/dist/mapvgl.min.js"></script>
     </head>
 
     <body>
-    <div id="allmap"></div>
+    <div id="map_container"></div>
     <div id="tips-right-below">图例<br>
-        <span style="color: lawngreen">公园</span><br>
-        <span style="color: blue">教育</span><br>
-        <span style="color: red">医院</span><br>
-        <span style="color: #FFD500">购物</span><br>
-        <span style="color: lightskyblue">交通</span>
+{#        <span style="color: lawngreen">公园</span><br>#}
+{#        <span style="color: blue">教育</span><br>#}
+{#        <span style="color: red">医院</span><br>#}
+{#        <span style="color: #FFD500">购物</span><br>#}
+{#        <span style="color: lightskyblue">交通</span>#}
+        <span style="color: rgba(0, 200, 200, 1)">0-30 k/m2</span><br>
+        <span style="color: rgba(0, 200, 100,1)">30-50 k/m2</span><br>
+        <span style="color: rgba(255, 220, 0, 1)">50-90 k/m2</span><br>
+        <span style="color: rgba(255, 0, 0, 1)">90+ k/m2</span>
     </div>
     </body>
 
-    <script type="text/javascript">
-        // GL版命名空间为BMapGL
-        // 按住鼠标右键，修改倾斜角和角度
-        var map = new BMapGL.Map("allmap");    // 创建Map实例
-        map.centerAndZoom(new BMapGL.Point(121.480, 31.240), 14);  // 初始化地图,设置中心点坐标和地图级别
-        map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-        map.setMapStyleV2({
+    <script>
+        /* global BMapGL */
+
+        /* global mapv */
+
+        /* global mapvgl */
+
+        /* global initMap */
+
+        /* global darkStyle */
+
+        function initMap(options) {
+            options = Object.assign({
+                tilt: 60,
+                heading: 0
+            }, options);
+            var map = new BMapGL.Map('map_container', {
+                restrictCenter: false,
+                // style: { styleJson: options.style || darkStyle }
+            });
+            map.enableKeyboard();
+            map.enableScrollWheelZoom();
+            map.enableInertialDragging();
+            map.enableContinuousZoom();
+
+            map.setDisplayOptions(options.displayOptions || {
+                indoor: false,
+                poi: true,
+                skyColors: options.skyColors || [
+                    'rgba(5, 5, 30, 0.01)',
+                    'rgba(5, 5, 30, 1.0)'
+                ]
+            });
+            if (options.center && options.zoom) {
+                let center = options.center;
+                if (center instanceof Array) {
+                    center = new BMapGL.Point(options.center[0], options.center[1])
+                }
+                map.centerAndZoom(center, options.zoom);
+            }
+
+            map.setTilt(options.tilt);
+            map.setHeading(options.heading);
+            return map;
+        }
+
+
+        var map = initMap({
+            tilt: 40,
+            heading: 0,
+            center: [121.480, 31.240],
+            zoom: 14,
+
         });
 
-        var points =[
-            {"lat":31.38286962427596,"lng":121.26032186949139,"count":5},
+        var data = [];
 
-        ];
 
-        if(!isSupportCanvas()){
-            alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~')
-        }
-        //详细的参数,可以查看heatmap.js的文档 https://github.com/pa7/heatmap.js/blob/master/README.md
-        //参数说明如下:
-        /* visible 热力图是否显示,默认为true
-         * opacity 热力的透明度,1-100
-         * radius 势力图的每个点的半径大小
-         * gradient  {JSON} 热力图的渐变区间 . gradient如下所示
-         *  {
-                .2:'rgb(0, 255, 255)',
-                .5:'rgb(0, 110, 255)',
-                .8:'rgb(100, 0, 255)'
+        // 构造数据
+        $.ajax({
+            url: "/map/map-get-points",
+            dataType: "json",
+            success: function (data_house) {
+                var points = data_house['houses'];
+                const low_price = 30;
+                const mid_price = 50;
+                const high_price = 90;
+
+                for (const point of points) {
+                    point_count = point.count;
+                    if (point_count < low_price) {
+                        value_array = [Math.round(point.count)];
+                    } else if(point_count < mid_price){
+                        value_array = [low_price, Math.round(point.count)-low_price];
+                    } else if(point_count < high_price){
+                        value_array = [low_price, mid_price-low_price, Math.round(point.count)-mid_price];
+                    } else {
+                        value_array = [low_price, mid_price-low_price, high_price-mid_price, Math.round(point.count)-high_price];
+                    }
+                    data.push({
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [point.lng, point.lat],
+                        },
+                        value: value_array,
+                        // 设置总高度，每段会根据比例生成各自的高度
+                        // height: 200 * 1000 + Math.random() * 200 * 1000,
+                        // 同时支持函数设置和数组
+                        height: function (value, index, array) {
+                            return value * 10-10;
+                        },
+                        size: 20 * 2,
+                        color: ['rgba(0, 200, 200, 0.5)', 'rgba(0, 200, 100,0.5)', 'rgba(255, 220, 0, 0.5)','rgba(255,0,0,0.5)']
+                    })
+                }
+                view.addLayer(layer);
+                layer.setData(data);
             }
-            其中 key 表示插值的位置, 0~1.
-                value 为颜色值.
-         */
-        heatmapOverlay = new BMapLib.HeatmapOverlay({"radius":45});
-        map.addOverlay(heatmapOverlay);
-        heatmapOverlay.setDataSet({data:points,max:100});
+        });
 
-        heatmapOverlay.show();
-        function setGradient(){
-            /*格式如下所示:
-            {
-                0:'rgb(102, 255, 0)',
-                .5:'rgb(255, 170, 0)',
-                1:'rgb(255, 0, 0)'
-            }*/
-            var gradient = {};
-            var colors = document.querySelectorAll("input[type='color']");
-            colors = [].slice.call(colors,0);
-            colors.forEach(function(ele){
-                gradient[ele.getAttribute("data-key")] = ele.value;
-            });
-            heatmapOverlay.setOptions({"gradient":gradient});
-        }
-        //判断浏览区是否支持canvas
-        function isSupportCanvas(){
-            var elem = document.createElement('canvas');
-            return !!(elem.getContext && elem.getContext('2d'));
-        }
+        var view = new mapvgl.View({
+            map: map
+        });
+
+        var layer = new mapvgl.BarLayer({
+            // size: 20 * map.getZoomUnits(),
+            // 柱体的边数，可设置较大值趋近圆柱
+            edgeCount: 50,
+            opacity: 0.3,
+        });
+
+        {#console.log(data);#}
+
     </script>
 {% endblock %}

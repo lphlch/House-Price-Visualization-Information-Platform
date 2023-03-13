@@ -29,7 +29,7 @@ def park(request):
         parks = models.Park.objects.all()
 
     # print(parks, search_name)
-    paginator = Paginator(parks, 10)  # Show 25 contacts per page
+    paginator = Paginator(parks, 10)  # Show 10 contacts per page
 
     page = request.GET.get('page')
     try:
@@ -276,8 +276,10 @@ class HouseForm(BootstrapModelForm):
         fields = '__all__'
         exclude = ['latitude', 'longitude']
 
+
 class HouseAddForm(HouseForm):
     pass
+
 
 class HouseEditForm(HouseForm):
     name = forms.CharField(max_length=20, disabled=True)
@@ -292,8 +294,20 @@ def house(request):
         houses = models.Neighbourhood.objects.all()
     # print(houses, search_name)
     houseForm = HouseAddForm()
+    paginator = Paginator(houses, 25)  # Show 25 contacts per page
+
+    page = request.GET.get('page')
+    try:
+        houses = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        houses = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        houses = paginator.page(paginator.num_pages)
 
     return render(request, 'house.html', {'houses': houses, 'search_name': search_name, 'form': houseForm})
+
 
 def houseAdd(request):
     if request.method == 'GET':
@@ -305,6 +319,7 @@ def houseAdd(request):
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'failed', 'errors': form.errors})
+
 
 def houseAddFromFile(request):
     if request.method == 'POST':
@@ -319,14 +334,18 @@ def houseAddFromFile(request):
             print(house)
             try:
                 district_instance = models.District.objects.filter(name=house[0]).first()
+                if not district_instance:
+                    district_instance = models.District.objects.filter(name='其它').first()
                 models.Neighbourhood.objects.create(name=house[1], district=district_instance, price=house[2],
                                                     latitude=house[3], longitude=house[4])
             except Exception as e:
                 print(e)
                 return render(request, 'add_from_file_error.html',
-                              {'error': 'Please check the file format!\n Format: no name district_no school_no park_no'})
+                              {
+                                  'error': 'Please check the file format!\n Format: no name district_no school_no park_no'})
         return redirect('/house/')
     return redirect('/house/')
+
 
 def houseEdit(request, nid):
     obj = models.Neighbourhood.objects.filter(no=nid).first()
@@ -341,15 +360,17 @@ def houseEdit(request, nid):
     print(form.errors)
     return render(request, 'house_edit.html', {'form': form})
 
+
 def houseDelete(request, nid):
     id = nid
 
     if not id:
-        return render(request, 'house.html', {'error': 'Please fill in the No.'})
+        return render(request, 'house.html', {'error': 'Please fill in the ID'})
 
     # id existence not checked
-    models.Neighbourhood.objects.filter(no=id).delete()
+    models.Neighbourhood.objects.filter(ID=id).delete()
     return redirect('/house/')
+
 
 # ------------------- School -------------------
 class SchoolForm(BootstrapModelForm):
@@ -470,6 +491,7 @@ def hospitalAdd(request):
     else:
         return JsonResponse({'status': 'failed', 'errors': form.errors})
 
+
 def hospitalAddFromFile(request):
     if request.method == 'POST':
         # fileName = request.POST.get('hospitalFile')
@@ -522,6 +544,7 @@ def map(request):
     if request.method == 'GET':
         return render(request, 'map.html')
 
+
 def mapPoints(request):
     if request.method == 'GET':
         houses = models.Neighbourhood.objects.all()
@@ -529,4 +552,10 @@ def mapPoints(request):
         # get price, lat, lng
         houses_list = houses.values_list('price', 'latitude', 'longitude')
 
-        return JsonResponse({'houses': list(houses_list)})
+        #! no need to use json.dumps
+        json_list =[{'lat': house[2], 'lng': house[1], 'count': int(house[0])} for house in houses_list]
+
+        # json_list = [
+        #     {"lat":34.34726881662395,"lng":108.94646555063274,"count":50},
+        # ]
+        return JsonResponse({'houses': json_list})

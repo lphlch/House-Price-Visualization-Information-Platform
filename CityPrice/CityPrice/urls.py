@@ -23,6 +23,7 @@ urlpatterns = [
     path('', views.index),
 
     path('map/', views.map),
+    path('map/map-get-points', views.mapPoints),
 
     path('park/', views.park),
     path('park/add', views.parkAdd),
