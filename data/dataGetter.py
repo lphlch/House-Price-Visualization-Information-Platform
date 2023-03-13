@@ -29,6 +29,7 @@ def saveData(data, count):
 def getDatas(count):
     print("Start to get data from url...")
     for i in range(count, 643):
+        url = "https://fangjia.gotohui.com/house-3/{}.html".format(i)
         sleepTime = randint(3, 7)
         sleep(sleepTime)
         print(url, sleepTime)

@@ -87,6 +87,7 @@ DATABASES = {
         'NAME':'city_house_price',
         'USER':'root',
         'PASSWORD':'root1234',
+        # 'HOST':'db',
         'HOST':'localhost',
         'PORT':'3306',
     }

@@ -17,8 +17,11 @@ class Neighbourhood(models.Model):
     """ Neighbourhood model """
     ID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    location = models.CharField(max_length=100)
+    # location = models.CharField(max_length=100)
     district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
+    longitude = models.FloatField(default=0)
+    latitude = models.FloatField(default=0)
+
     # foreign key & delete the recode if the district is deleted
     # district = models.ForeignKey(to=District, to_field='no', on_delete=models.CASCADE)
     # set null if the district is deleted
@@ -26,11 +29,11 @@ class Neighbourhood(models.Model):
     price = models.FloatField()
 
 
-class Location(models.Model):
-    """ Location model """
-    name = models.CharField(max_length=100)
-    longitude = models.FloatField()
-    latitude = models.FloatField()
+# class Location(models.Model):
+#     """ Location model """
+#     name = models.CharField(max_length=100)
+#     longitude = models.FloatField()
+#     latitude = models.FloatField()
 
 
 class Park(models.Model):

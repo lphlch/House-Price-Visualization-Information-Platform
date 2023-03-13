@@ -4,6 +4,7 @@ import json
 from time import sleep
 
 def transLocation(address):
+    ak = "wLSWTGd4lsWbdFDsN5qLMXphV9l83mo6"
     url = (
         "https://api.map.baidu.com/geocoding/v3/?address="
         + address
@@ -39,11 +40,11 @@ def readData(fileName,start=0):
     return datas
 
 
-datas = readData("data.txt", 9000)
+datas = readData("data.txt", 12000)
 
 address_file = open("address.txt", "a")
 
-for address in datas[:500]:
+for address in datas[:1000]:
     status, lng, lat = transLocation(address)
     print(address, status, lng, lat)
     if status == 0:

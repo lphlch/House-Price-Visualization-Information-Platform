@@ -29,7 +29,7 @@ def park(request):
         parks = models.Park.objects.all()
 
     # print(parks, search_name)
-    paginator = Paginator(parks, 3) # Show 25 contacts per page
+    paginator = Paginator(parks, 10)  # Show 25 contacts per page
 
     page = request.GET.get('page')
     try:
@@ -97,10 +97,21 @@ def parkAdd(request):
 
 def parkAddFromFile(request):
     if request.method == 'POST':
-        fileName = request.POST.get('parkFile')
-        file = request.FILES
-        print(file)
+        # fileName = request.POST.get('parkFile')
+        file = request.FILES.get('parkFile')
+        file_data = file.read().decode('utf-8').splitlines()
+        print(file_data)
 
+        for park in file_data:
+            park = park.split()
+            print(park)
+            try:
+                district_instance = models.District.objects.filter(name=park[3]).first()
+                models.Park.objects.create(name=park[0], area=park[1], location=park[2], district=district_instance)
+            except Exception as e:
+                print(e)
+                return render(request, 'add_from_file_error.html',
+                              {'error': 'Please check the file format!\n Format: name area(k) location district'})
         return redirect('/park/')
     return redirect('/park/')
 
@@ -192,6 +203,27 @@ def districtAdd(request):
         return JsonResponse({'status': 'failed', 'errors': form.errors})
 
 
+def districtAddFromFile(request):
+    if request.method == 'POST':
+        # fileName = request.POST.get('districtFile')
+        file = request.FILES.get('districtFile')
+        file_data = file.read().decode('utf-8').splitlines()
+        print(file_data)
+
+        for district in file_data:
+            district = district.split()
+            print(district)
+            try:
+                models.District.objects.create(no=district[0], name=district[1], population=district[2],
+                                               area=district[3])
+            except Exception as e:
+                print(e)
+                return render(request, 'add_from_file_error.html',
+                              {'error': 'Please check the file format!\n Format: no name population area'})
+        return redirect('/district/')
+    return redirect('/district/')
+
+
 def districtDelete(request, nid):
     id = nid
 
@@ -216,10 +248,13 @@ def districtEdit(request, nid):
     print(form.errors)
     return render(request, 'district_edit.html', {'form': form})
 
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
 def pageTest(request):
     obj = models.District.objects.all()
-    paginator = Paginator(obj, 3) # Show 25 contacts per page
+    paginator = Paginator(obj, 3)  # Show 25 contacts per page
 
     page = request.GET.get('page')
     try:
@@ -239,6 +274,13 @@ class HouseForm(BootstrapModelForm):
     class Meta:
         model = models.Neighbourhood
         fields = '__all__'
+        exclude = ['latitude', 'longitude']
+
+class HouseAddForm(HouseForm):
+    pass
+
+class HouseEditForm(HouseForm):
+    name = forms.CharField(max_length=20, disabled=True)
 
 
 def house(request):
@@ -249,10 +291,65 @@ def house(request):
         search_name = ''
         houses = models.Neighbourhood.objects.all()
     # print(houses, search_name)
+    houseForm = HouseAddForm()
 
-    return render(request, 'house.html', {'houses': houses, 'search_name': search_name})
+    return render(request, 'house.html', {'houses': houses, 'search_name': search_name, 'form': houseForm})
 
+def houseAdd(request):
+    if request.method == 'GET':
+        return None
 
+    form = HouseForm(data=request.POST)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'failed', 'errors': form.errors})
+
+def houseAddFromFile(request):
+    if request.method == 'POST':
+        # fileName = request.POST.get('houseFile')
+        file = request.FILES.get('houseFile')
+        file_data = file.read().decode('utf-8').splitlines()
+        # print('file_data',file_data)
+
+        for house in file_data:
+            house = house.split()
+            # district name price latitude longitude
+            print(house)
+            try:
+                district_instance = models.District.objects.filter(name=house[0]).first()
+                models.Neighbourhood.objects.create(name=house[1], district=district_instance, price=house[2],
+                                                    latitude=house[3], longitude=house[4])
+            except Exception as e:
+                print(e)
+                return render(request, 'add_from_file_error.html',
+                              {'error': 'Please check the file format!\n Format: no name district_no school_no park_no'})
+        return redirect('/house/')
+    return redirect('/house/')
+
+def houseEdit(request, nid):
+    obj = models.Neighbourhood.objects.filter(no=nid).first()
+    if request.method == 'GET':
+        form = HouseForm(instance=obj)
+        return render(request, 'house_edit.html', {'form': form})
+
+    form = HouseForm(data=request.POST, instance=obj)
+    if form.is_valid():
+        form.save()
+        return redirect('/house/')
+    print(form.errors)
+    return render(request, 'house_edit.html', {'form': form})
+
+def houseDelete(request, nid):
+    id = nid
+
+    if not id:
+        return render(request, 'house.html', {'error': 'Please fill in the No.'})
+
+    # id existence not checked
+    models.Neighbourhood.objects.filter(no=id).delete()
+    return redirect('/house/')
 
 # ------------------- School -------------------
 class SchoolForm(BootstrapModelForm):
@@ -263,6 +360,7 @@ class SchoolForm(BootstrapModelForm):
 
 class SchoolAddForm(SchoolForm):
     pass
+
 
 def school(request):
     search_name = request.GET.get('search_name')
@@ -276,6 +374,7 @@ def school(request):
 
     return render(request, 'school.html', {'schools': schools, 'search_name': search_name, 'form': schoolForm})
 
+
 def schoolAdd(request):
     if request.method == 'GET':
         return None
@@ -287,6 +386,30 @@ def schoolAdd(request):
     else:
         return JsonResponse({'status': 'failed', 'errors': form.errors})
 
+
+def schoolAddFromFile(request):
+    if request.method == 'POST':
+        # fileName = request.POST.get('schoolFile')
+        file = request.FILES.get('schoolFile')
+        file_data = file.read().decode('utf-8').splitlines()
+        print(file_data)
+
+        for school in file_data:
+            school = school.split()
+            print(school)
+            try:
+                # name location district level
+                district_instance = models.District.objects.filter(no=school[2]).first()
+                models.School.objects.create(name=school[0], location=school[1], district=district_instance,
+                                             level=school[3])
+            except Exception as e:
+                print(e)
+                return render(request, 'add_from_file_error.html',
+                              {'error': 'Please check the file format!\n Format: name location district level'})
+        return redirect('/school/')
+    return redirect('/school/')
+
+
 def schoolDelete(request, nid):
     id = nid
 
@@ -296,6 +419,7 @@ def schoolDelete(request, nid):
     # id existence not checked
     models.School.objects.filter(ID=id).delete()
     return redirect('/school/')
+
 
 def schoolEdit(request, nid):
     obj = models.School.objects.filter(ID=nid).first()
@@ -311,15 +435,16 @@ def schoolEdit(request, nid):
     return render(request, 'school_edit.html', {'form': form})
 
 
-
 # ------------------- Hospital -------------------
 class HospitalForm(BootstrapModelForm):
     class Meta:
         model = models.Hospital
         fields = '__all__'
 
+
 class HospitalAddForm(HospitalForm):
     pass
+
 
 def hospital(request):
     search_name = request.GET.get('search_name')
@@ -333,6 +458,7 @@ def hospital(request):
 
     return render(request, 'hospital.html', {'hospitals': hospitals, 'search_name': search_name, 'form': hospitalForm})
 
+
 def hospitalAdd(request):
     if request.method == 'GET':
         return None
@@ -344,6 +470,29 @@ def hospitalAdd(request):
     else:
         return JsonResponse({'status': 'failed', 'errors': form.errors})
 
+def hospitalAddFromFile(request):
+    if request.method == 'POST':
+        # fileName = request.POST.get('hospitalFile')
+        file = request.FILES.get('hospitalFile')
+        file_data = file.read().decode('utf-8').splitlines()
+        print(file_data)
+
+        for hospital in file_data:
+            hospital = hospital.split()
+            print(hospital)
+            try:
+                # name location district level
+                district_instance = models.District.objects.filter(no=hospital[2]).first()
+                models.Hospital.objects.create(name=hospital[0], location=hospital[1], district=district_instance,
+                                               level=hospital[3])
+            except Exception as e:
+                print(e)
+                return render(request, 'add_from_file_error.html',
+                              {'error': 'Please check the file format!\n Format: name location district level'})
+        return redirect('/hospital/')
+    return redirect('/hospital/')
+
+
 def hospitalDelete(request, nid):
     id = nid
 
@@ -353,6 +502,7 @@ def hospitalDelete(request, nid):
     # id existence not checked
     models.Hospital.objects.filter(ID=id).delete()
     return redirect('/hospital/')
+
 
 def hospitalEdit(request, nid):
     obj = models.Hospital.objects.filter(ID=nid).first()
@@ -367,6 +517,16 @@ def hospitalEdit(request, nid):
     print(form.errors)
     return render(request, 'hospital_edit.html', {'form': form})
 
+
 def map(request):
-    print('map')
-    return render(request, 'map.html')
+    if request.method == 'GET':
+        return render(request, 'map.html')
+
+def mapPoints(request):
+    if request.method == 'GET':
+        houses = models.Neighbourhood.objects.all()
+
+        # get price, lat, lng
+        houses_list = houses.values_list('price', 'latitude', 'longitude')
+
+        return JsonResponse({'houses': list(houses_list)})

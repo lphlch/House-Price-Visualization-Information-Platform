@@ -32,18 +32,25 @@ urlpatterns = [
 
     path('district/', views.district),
     path('district/add', views.districtAdd),
+    path('district/add-from-file', views.districtAddFromFile),
     path('district/edit/<int:nid>', views.districtEdit),
     path('district/delete/<int:nid>', views.districtDelete),
 
     path('house/', views.house),
+    path('house/add', views.houseAdd),
+    path('house/add-from-file', views.houseAddFromFile),
+    path('house/edit/<int:nid>', views.houseEdit),
+    path('house/delete/<int:nid>', views.houseDelete),
 
     path('school/', views.school),
     path('school/add', views.schoolAdd),
+    path('school/add-from-file', views.schoolAddFromFile),
     path('school/edit/<int:nid>', views.schoolEdit),
     path('school/delete/<int:nid>', views.schoolDelete),
 
     path('hospital/', views.hospital),
     path('hospital/add', views.hospitalAdd),
+    path('hospital/add-from-file', views.hospitalAddFromFile),
     path('hospital/edit/<int:nid>', views.hospitalEdit),
     path('hospital/delete/<int:nid>', views.hospitalDelete),
 

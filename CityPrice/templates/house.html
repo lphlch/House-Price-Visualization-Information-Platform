@@ -8,11 +8,13 @@
                 <div><h1 class="mt-2">House List</h1></div>
                 <div class="row">
                     <div class="col-sm">
-                        {#                        <a class="btn btn-success" href="/park/add" role="button">Add</a>#}
-                        {#                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addPark">#}
-                        {#                            Add Parks From File#}
-                        {#                        </button>#}
-                        {# <a class="btn btn-danger" onclick="deletePark()" role="button">Delete</a>#}
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addHouse">
+                            Add House
+                        </button>
+                        <!--- add from file -->
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addHouseFromFile">
+                            Add Houses From File
+                        </button>
                     </div>
                     <form method="get">
                         <div class="input-group col-sm">
@@ -27,73 +29,136 @@
             </div>
         </div>
 
+        <!-- House Add Modal -->
+        <div class="modal fade" id="addHouse" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add House</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="modelForm">
+                            {% csrf_token %}
+                            <div class="form-row">
+                                {% for field in form %}
+                                    <div class="form-group col-md-6">
+                                        {{ field.label }}{{ field }}
+                                        <span class="text-danger">{{ field.errors.0 }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="formSubmit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- House Add From File Modal -->
+        <div class="modal fade" id="addHouseFromFile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="housesForm" method="post" action="add-from-file" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Houses</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label for="housesFile">Choose a txt file to upload</label>
+                            <input type="file" name="houseFile">
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="formSubmit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- table -->
         <table class="table table-bordered mt-3">
             <caption>House List</caption>
             <thead>
             <tr>
-                <th scope="col">ID</th>
+                <th scope="col">No.</th>
                 <th scope="col">Name</th>
-                <th scope="col">Price</th>
                 <th scope="col">District</th>
-                <th scope="col">Location</th>
+                <th scope="col">Price</th>
+                <th scope="col">Operation</th>
             </tr>
             </thead>
             <tbody>
 
-            {% for house in houses %}
+            {% for filed in houses %}
                 <tr>
                     <th scope="row">
-                        {{ house.ID }}
+                        {{ filed.ID }}
                     </th>
                     <td>
-                        {{ house.name }}
+                        {{ filed.name }}
                     </td>
                     <td>
-                        {{ house.price }}
+                        {{ filed.district }}
                     </td>
                     <td>
-                        {{ house.district }}
+                        {{ filed.price }}
                     </td>
                     <td>
-                        {{ house.location }}
+                        <a class="btn-sm btn-primary" href="/house/edit/{{ filed.no }}" role="button">Edit</a>
+                        <a class="btn-sm btn-danger" href="/house/delete/{{ filed.no }}" role="button">Delete</a>
                     </td>
-                    {#                    <td>#}
-                    {#                        <a class="btn-sm btn-primary" href="/park/edit/{{ park.ID }}" role="button">Edit</a>#}
-                    {#                        <a class="btn-sm btn-danger" href="/park/delete/{{ park.ID }}" role="button">Delete</a>#}
-                    {#                    </td>#}
                 </tr>
             {% endfor %}
 
             </tbody>
         </table>
 
-        <ul class="pagination align-self-center">
-            {% if houses.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ houses.previous_page_number }}">Previous</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link disabled">Previous</a>
-                </li>
-            {% endif %}
-
-            <li class="page-item">
-                <a class="page-link" href="#">{{ houses.number }} of {{ houses.paginator.num_pages }}</a>
-            </li>
-
-            {% if obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ houses.next_page_number }}">Next</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link disabled">Next</a>
-                </li>
-            {% endif %}
-        </ul>
     </div>
+{% endblock %}
 
+{% block script %}
+    <script>
+        $(function () {
+            bindBtnAddSubmitEvent();
+        })
 
+        function bindBtnAddSubmitEvent() {
+            $('#formSubmit').click(function () {
+                var data = $('#modelForm').serialize();
+                $.ajax({
+                    url: '/house/add',
+                    type: 'POST',
+                    data: data,
+                    success: function (data) {
+                        if (data.status == 'success') {
+                            $('.toast').toast('show');
+                            location.reload();
+                        } else {
+                            $.each(data.errors, function (key, value) {
+                                $('#id_' + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+
+    </script>
 
 {% endblock %}
