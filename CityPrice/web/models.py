@@ -60,7 +60,8 @@ class Hospital(models.Model):
         (4, '二乙'),
         (5, '二甲'),
         (6, '三乙'),
-        (7, '三甲')
+        (7, '三甲'),
+        (9,'其它')
     )
     level = models.SmallIntegerField(choices=hospitalLevelChoices)  # hospital level
 
@@ -77,6 +78,7 @@ class School(models.Model):
         (2, '小学'),
         (3, '初中'),
         (4, '职业高中'),
-        (5, '普通高中')
+        (5, '普通高中'),
+        (9,'其它')
     )
     level = models.SmallIntegerField(choices=schoolLevelChoices)  # school type

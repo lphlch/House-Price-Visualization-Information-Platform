@@ -107,6 +107,8 @@ def parkAddFromFile(request):
             print(park)
             try:
                 district_instance = models.District.objects.filter(name=park[3]).first()
+                if not district_instance:
+                    district_instance = models.District.objects.filter(name='其它').first()
                 models.Park.objects.create(name=park[0], area=park[1], location=park[2], district=district_instance)
             except Exception as e:
                 print(e)
@@ -421,8 +423,12 @@ def schoolAddFromFile(request):
             try:
                 # name location district level
                 district_instance = models.District.objects.filter(no=school[2]).first()
+                if not district_instance:
+                    district_instance = models.District.objects.filter(name='其它').first()
+
                 models.School.objects.create(name=school[0], location=school[1], district=district_instance,
                                              level=school[3])
+
             except Exception as e:
                 print(e)
                 return render(request, 'add_from_file_error.html',
@@ -504,7 +510,9 @@ def hospitalAddFromFile(request):
             print(hospital)
             try:
                 # name location district level
-                district_instance = models.District.objects.filter(no=hospital[2]).first()
+                district_instance = models.District.objects.filter(name=hospital[2]).first()
+                if not district_instance:
+                    district_instance = models.District.objects.filter(name='其它').first()
                 models.Hospital.objects.create(name=hospital[0], location=hospital[1], district=district_instance,
                                                level=hospital[3])
             except Exception as e:

@@ -20,7 +20,7 @@ from web import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index),
+    path('', views.map),
 
     path('map/', views.map),
     path('map/map-get-points', views.mapPoints),

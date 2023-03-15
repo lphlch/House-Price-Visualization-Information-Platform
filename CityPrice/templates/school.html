@@ -11,6 +11,9 @@
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addSchool">
                             Add School
                         </button>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addSchoolFromFile">
+                            Add Schools From File
+                        </button>
                     </div>
                     <form method="get">
                         <div class="input-group col-sm">
@@ -54,6 +57,39 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="formSubmit">Submit</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- School Add From File Modal -->
+        <div class="modal fade" id="addSchoolFromFile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="schoolsForm" method="post" action="add-from-file" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Schools</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label for="schoolsFile">Choose a txt file to upload<br>Format: Name | Location | District | Level<br>Level: 1=幼儿园,
+                                2=小学,
+                                3=初中,
+                                4=职业高中,
+                                5=普通高中,
+                                9=其它</label>
+                            <input type="file" name="schoolFile">
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="formSubmit">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

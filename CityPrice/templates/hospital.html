@@ -11,7 +11,9 @@
                         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addHospital">
                             Add Hospital
                         </button>
-                        <a class="btn btn-success" href="/hospital/add-from-file" role="button">Add From File</a>
+                        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addHospitalFromFile">
+                            Add Hospitals From File
+                        </button>
                     </div>
                     <form method="get">
                         <div class="input-group col-sm">
@@ -59,6 +61,41 @@
             </div>
         </div>
 
+        <!-- Hospital Add From File Modal -->
+        <div class="modal fade" id="addHospitalFromFile" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="hospitalsForm" method="post" action="add-from-file" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add Hospitals</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <label for="hospitalsFile">Choose a txt file to upload<br>Format: Name | Location | District | Level<br>
+                                Level: 1=无等级,
+                                2=一乙,
+                                3=一甲,
+                                4=二乙,
+                                5=二甲,
+                                6=三乙,
+                                7=三甲,
+                                9=其它</label>
+                            <input type="file" name="hospitalFile">
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" id="formSubmit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         <table class="table table-bordered mt-3">
             <caption>Hospital List</caption>
