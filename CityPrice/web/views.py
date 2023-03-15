@@ -1,8 +1,12 @@
+import logging
+
 from django import forms
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from web import models
+
+logger = logging.getLogger(__name__)
 
 
 # ------------------- Model Form -------------------
@@ -21,6 +25,7 @@ def index(request):
 
 # ------------------- Park -------------------
 def park(request):
+    logger.info('ENTER park page')
     search_name = request.GET.get('search_name')
     if search_name:
         parks = models.Park.objects.filter(name__contains=search_name)
@@ -101,10 +106,13 @@ def parkAddFromFile(request):
         file = request.FILES.get('parkFile')
         file_data = file.read().decode('utf-8').splitlines()
         print(file_data)
+        logger.info(file_data)
 
         for park in file_data:
             park = park.split()
             print(park)
+            logger.info(park)
+
             try:
                 district_instance = models.District.objects.filter(name=park[3]).first()
                 if not district_instance:
@@ -112,8 +120,11 @@ def parkAddFromFile(request):
                 models.Park.objects.create(name=park[0], area=park[1], location=park[2], district=district_instance)
             except Exception as e:
                 print(e)
+                logger.error(e)
                 return render(request, 'add_from_file_error.html',
-                              {'error': 'Please check the file format!\n Format: name area(k) location district'})
+                              {'error': 'Please check the file format!\n Format: name area(k) location district',
+                               'input': park, 'error_info': e
+                               })
         return redirect('/park/')
     return redirect('/park/')
 
@@ -214,14 +225,17 @@ def districtAddFromFile(request):
 
         for district in file_data:
             district = district.split()
-            print(district)
+            # log the district info
+            logger.info(district)
+
             try:
                 models.District.objects.create(no=district[0], name=district[1], population=district[2],
                                                area=district[3])
             except Exception as e:
                 print(e)
                 return render(request, 'add_from_file_error.html',
-                              {'error': 'Please check the file format!\n Format: no name population area'})
+                              {'error': 'Please check the file format!\n Format: no name population area',
+                               'input': district, 'error_info': str(e)})
         return redirect('/district/')
     return redirect('/district/')
 
@@ -328,12 +342,13 @@ def houseAddFromFile(request):
         # fileName = request.POST.get('houseFile')
         file = request.FILES.get('houseFile')
         file_data = file.read().decode('utf-8').splitlines()
-        # print('file_data',file_data)
+        # print('file_data', file_data)
 
         for house in file_data:
             house = house.split()
             # district name price latitude longitude
-            print(house)
+            # print(house)
+            # logger.info(house)
             try:
                 district_instance = models.District.objects.filter(name=house[0]).first()
                 if not district_instance:
@@ -342,9 +357,12 @@ def houseAddFromFile(request):
                                                     latitude=house[3], longitude=house[4])
             except Exception as e:
                 print(e)
+                logger.error(e)
                 return render(request, 'add_from_file_error.html',
                               {
-                                  'error': 'Please check the file format!\n Format: no name district_no school_no park_no'})
+                                  'error': 'Please check the file format!\n Format: no name district latitude longitude',
+                                  'input': house, 'error_info': str(e)
+                              })
         return redirect('/house/')
     return redirect('/house/')
 
@@ -420,6 +438,7 @@ def schoolAddFromFile(request):
         for school in file_data:
             school = school.split()
             print(school)
+            logger.info(school)
             try:
                 # name location district level
                 district_instance = models.District.objects.filter(no=school[2]).first()
@@ -432,7 +451,8 @@ def schoolAddFromFile(request):
             except Exception as e:
                 print(e)
                 return render(request, 'add_from_file_error.html',
-                              {'error': 'Please check the file format!\n Format: name location district level'})
+                              {'error': 'Please check the file format!\n Format: name location district level',
+                               'input': school, 'error_info': e})
         return redirect('/school/')
     return redirect('/school/')
 
@@ -508,6 +528,7 @@ def hospitalAddFromFile(request):
         for hospital in file_data:
             hospital = hospital.split()
             print(hospital)
+            logger.info(hospital)
             try:
                 # name location district level
                 district_instance = models.District.objects.filter(name=hospital[2]).first()
@@ -518,7 +539,8 @@ def hospitalAddFromFile(request):
             except Exception as e:
                 print(e)
                 return render(request, 'add_from_file_error.html',
-                              {'error': 'Please check the file format!\n Format: name location district level'})
+                              {'error': 'Please check the file format!\n Format: name location district level',
+                               'input': hospital, 'error_info': e})
         return redirect('/hospital/')
     return redirect('/hospital/')
 
@@ -560,8 +582,8 @@ def mapPoints(request):
         # get price, lat, lng
         houses_list = houses.values_list('price', 'latitude', 'longitude')
 
-        #! no need to use json.dumps
-        json_list =[{'lat': house[2], 'lng': house[1], 'count': int(house[0])} for house in houses_list]
+        # ! no need to use json.dumps
+        json_list = [{'lat': house[2], 'lng': house[1], 'count': int(house[0])} for house in houses_list]
 
         # json_list = [
         #     {"lat":34.34726881662395,"lng":108.94646555063274,"count":50},
