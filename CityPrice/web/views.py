@@ -368,7 +368,7 @@ def houseAddFromFile(request):
 
 
 def houseEdit(request, nid):
-    obj = models.Neighbourhood.objects.filter(no=nid).first()
+    obj = models.Neighbourhood.objects.filter(ID=nid).first()
     if request.method == 'GET':
         form = HouseForm(instance=obj)
         return render(request, 'house_edit.html', {'form': form})
@@ -585,7 +585,4 @@ def mapPoints(request):
         # ! no need to use json.dumps
         json_list = [{'lat': house[2], 'lng': house[1], 'count': int(house[0])} for house in houses_list]
 
-        # json_list = [
-        #     {"lat":34.34726881662395,"lng":108.94646555063274,"count":50},
-        # ]
         return JsonResponse({'houses': json_list})
