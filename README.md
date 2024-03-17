@@ -23,26 +23,19 @@ Follow these steps to set up and run the server:
    git clone https://github.com/lphlch/DatabaseProjectDesign
    cd house-price-visualization
 
-1. Create a `.env` file in the project root directory and configure the environment variables. You can use the provided `.env.example` file as a template.
-
-   ```
-   bashCopy code
-   cp .env.example .env
-   ```
+1. Create a `.env` file in the project root directory and configure the environment variables.
 
    Edit the `.env` file to set your desired environment variables, such as the database settings and secret key.
 
 2. Navigate to the `/CityPrice/` directory:
 
    ```
-   bashCopy code
    cd CityPrice
    ```
 
 3. Create a Python virtual environment (optional but recommended):
 
    ```
-   bashCopy code
    python -m venv venv
    ```
 
@@ -51,35 +44,30 @@ Follow these steps to set up and run the server:
    - On Windows:
 
      ```
-     bashCopy code
      venv\Scripts\activate
      ```
 
    - On macOS and Linux:
 
      ```
-     bashCopy code
      source venv/bin/activate
      ```
 
 5. Install the required Python packages from the `requirements.txt` file:
 
    ```
-   bashCopy code
    pip install -r requirements.txt
    ```
 
 6. Return to the project root directory:
 
    ```
-   bashCopy code
    cd ..
    ```
 
 7. Build and run the Docker containers using `docker-compose`:
 
    ```
-   bashCopy code
    docker-compose up --build
    ```
 
@@ -99,7 +87,6 @@ Here are some basic usage instructions for the House Price Visualization Informa
 To stop and remove the Docker containers, use the following command:
 
 ```
-bashCopy code
 docker-compose down
 ```
 
